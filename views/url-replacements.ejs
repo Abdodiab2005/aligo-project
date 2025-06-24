@@ -1,0 +1,124 @@
+<%- include('layout', { title: title, user: user, activePage: activePage }) %>
+<div class="container mt-4">
+  <h1 class="mb-4">URL Replacements</h1>
+  <div class="card mb-4">
+    <div class="card-header">Add New Replacement</div>
+    <div class="card-body">
+      <form id="add-url-replacement-form" class="row g-3">
+        <div class="col-md-5">
+          <input type="text" class="form-control" id="original_url" name="original_url" placeholder="Original URL (pattern or domain)" required>
+        </div>
+        <div class="col-md-5">
+          <input type="text" class="form-control" id="replacement_url" name="replacement_url" placeholder="Replacement URL" required>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">Add / Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">Current Replacements</div>
+    <div class="card-body p-0">
+      <table class="table table-striped mb-0" id="replacements-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Original URL</th>
+            <th>Replacement URL</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (replacements && replacements.length) { %>
+            <% replacements.forEach(function(rep) { %>
+              <tr data-id="<%= rep.id %>">
+                <td><%= rep.id %></td>
+                <td class="editable" data-field="original_url"><%= rep.original_url %></td>
+                <td class="editable" data-field="replacement_url"><%= rep.replacement_url %></td>
+                <td>
+                  <button class="btn btn-sm btn-danger delete-btn">Delete</button>
+                  <button class="btn btn-sm btn-secondary edit-btn">Edit</button>
+                  <button class="btn btn-sm btn-success save-btn d-none">Save</button>
+                  <button class="btn btn-sm btn-warning cancel-btn d-none">Cancel</button>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr><td colspan="4" class="text-center">No replacements found.</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+// Add new or update replacement
+const form = document.getElementById('add-url-replacement-form');
+form.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const original_url = form.original_url.value.trim();
+  const replacement_url = form.replacement_url.value.trim();
+  if (!original_url || !replacement_url) return alert('Both fields are required');
+  try {
+    const res = await fetch('/api/url-replacements', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ original_url, replacement_url })
+    });
+    const data = await res.json();
+    if (data.success) {
+      location.reload();
+    } else {
+      alert(data.error || 'Failed to add replacement');
+    }
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+});
+
+// Edit/delete logic
+const table = document.getElementById('replacements-table');
+table.addEventListener('click', async function(e) {
+  const tr = e.target.closest('tr');
+  if (!tr) return;
+  const id = tr.getAttribute('data-id');
+  if (e.target.classList.contains('delete-btn')) {
+    if (!confirm('Delete this replacement?')) return;
+    try {
+      const res = await fetch(`/api/url-replacements/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) tr.remove();
+      else alert(data.error || 'Failed to delete');
+    } catch (err) { alert('Error: ' + err.message); }
+  }
+  if (e.target.classList.contains('edit-btn')) {
+    tr.querySelectorAll('.editable').forEach(td => {
+      td.contentEditable = true;
+      td.classList.add('table-warning');
+    });
+    tr.querySelector('.edit-btn').classList.add('d-none');
+    tr.querySelector('.save-btn').classList.remove('d-none');
+    tr.querySelector('.cancel-btn').classList.remove('d-none');
+  }
+  if (e.target.classList.contains('cancel-btn')) {
+    window.location.reload();
+  }
+  if (e.target.classList.contains('save-btn')) {
+    const original_url = tr.querySelector('[data-field="original_url"]').innerText.trim();
+    const replacement_url = tr.querySelector('[data-field="replacement_url"]').innerText.trim();
+    if (!original_url || !replacement_url) return alert('Both fields required');
+    try {
+      const res = await fetch(`/api/url-replacements/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ original_url, replacement_url })
+      });
+      const data = await res.json();
+      if (data.success) window.location.reload();
+      else alert(data.error || 'Failed to update');
+    } catch (err) { alert('Error: ' + err.message); }
+  }
+});
+</script>

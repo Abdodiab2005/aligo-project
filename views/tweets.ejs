@@ -1,0 +1,270 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Tweet Manager</h1>
+    <div class="d-flex gap-2">
+      <button
+        class="btn btn-outline-primary"
+        data-toggle="modal"
+        data-target="#add-tweet-modal"
+      >
+        <i class="fas fa-plus"></i> Add Custom Tweet
+      </button>
+      <button class="btn btn-primary" onclick="scheduleNextBatch()">
+        <i class="fas fa-calendar"></i> Schedule Next Batch
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter tabs -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="btn-group" role="group">
+        <a
+          href="/dashboard/tweets?filter=all"
+          class="btn <%= (typeof filter === 'undefined' || filter === 'all') ? 'btn-primary' : 'btn-outline-primary' %>"
+        >
+          All Tweets
+        </a>
+        <a
+          href="/dashboard/tweets?filter=queued"
+          class="btn <%= filter === 'queued' ? 'btn-primary' : 'btn-outline-primary' %>"
+        >
+          Queued
+        </a>
+        <a
+          href="/dashboard/tweets?filter=posted"
+          class="btn <%= filter === 'posted' ? 'btn-primary' : 'btn-outline-primary' %>"
+        >
+          Posted
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title">Tweets</h5>
+      <p class="card-subtitle">
+        Showing <%= typeof tweets !== 'undefined' ? tweets.length : 0 %> tweets
+        <% if (typeof filter !== 'undefined' && filter !== 'all') { %> (filtered
+        by: <%= filter %>) <% } %>
+      </p>
+    </div>
+    <div class="card-body p-0">
+      <% if (typeof tweets !== 'undefined' && tweets.length > 0) { %> <%
+      tweets.forEach(function(tweet) { %>
+      <div class="tweet-item border-bottom p-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center mb-2">
+              <span
+                class="badge <%= tweet.posted ? 'badge-success' : 'badge-warning' %> me-2"
+              >
+                <%= tweet.posted ? 'Posted' : 'Queued' %>
+              </span>
+              <small class="text-muted">@<%= tweet.username %></small>
+              <% if (tweet.scheduled_for) { %>
+              <small class="text-muted ms-2">
+                Scheduled: <%= new Date(tweet.scheduled_for).toLocaleString() %>
+              </small>
+              <% } %>
+            </div>
+            <div class="tweet-text">
+              <%= tweet.modified_text || tweet.original_text %>
+            </div>
+            <% if (tweet.original_url) { %>
+            <small class="text-muted">
+              <a href="<%= tweet.original_url %>" target="_blank"
+                >View Original</a
+              >
+            </small>
+            <% } %>
+          </div>
+          <div class="tweet-actions">
+            <div class="btn-group btn-group-sm">
+              <% if (!tweet.posted) { %>
+              <button
+                class="btn btn-outline-primary"
+                onclick="editTweet(<%= tweet.id %>)"
+              >
+                <i class="fas fa-edit"></i>
+              </button>
+              <button
+                class="btn btn-outline-success"
+                onclick="postTweet(<%= tweet.id %>)"
+              >
+                <i class="fas fa-paper-plane"></i>
+              </button>
+              <% } %>
+              <button
+                class="btn btn-outline-danger"
+                onclick="deleteTweet(<%= tweet.id %>)"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% }); %> <% } else { %>
+      <div class="text-center py-5">
+        <i class="fas fa-comment fa-3x text-muted mb-3"></i>
+        <h5>No tweets found</h5>
+        <p class="text-muted">
+          <% if (typeof filter !== 'undefined' && filter !== 'all') { %> No <%=
+          filter %> tweets available <% } else { %> Start by adding Twitter
+          accounts to monitor <% } %>
+        </p>
+      </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <% if (typeof totalTweets !== 'undefined' && totalTweets > limit) { %>
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+      <% const totalPages = Math.ceil(totalTweets / limit); const currentPage =
+      typeof page !== 'undefined' ? page : 1; %> <% for (let i = 1; i <=
+      totalPages; i++) { %>
+      <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+        <a
+          class="page-link"
+          href="/dashboard/tweets?page=<%= i %>&filter=<%= filter || 'all' %>"
+          ><%= i %></a
+        >
+      </li>
+      <% } %>
+    </ul>
+  </nav>
+  <% } %>
+</div>
+
+<!-- Add Tweet Modal -->
+<div class="modal" id="add-tweet-modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Custom Tweet</h5>
+        <button type="button" class="close" data-dismiss="modal">
+          &times;
+        </button>
+      </div>
+      <form id="add-tweet-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="tweet-account">Account</label>
+            <select
+              class="form-control"
+              id="tweet-account"
+              name="accountId"
+              required
+            >
+              <% if (typeof accounts !== 'undefined') { %> <%
+              accounts.forEach(function(account) { %>
+              <option value="<%= account.id %>">
+                @<%= account.username %>
+              </option>
+              <% }); %> <% } %>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="tweet-text">Tweet Text</label>
+            <textarea
+              class="form-control"
+              id="tweet-text"
+              name="text"
+              rows="4"
+              maxlength="280"
+              required
+            ></textarea>
+            <small class="form-text text-muted">
+              <span id="char-count">0</span>/280 characters
+            </small>
+          </div>
+          <div class="form-group">
+            <label for="schedule-time">Schedule Time (optional)</label>
+            <input
+              type="datetime-local"
+              class="form-control"
+              id="schedule-time"
+              name="scheduleTime"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">Add Tweet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Character counter
+  document.getElementById("tweet-text")?.addEventListener("input", function () {
+    const count = this.value.length;
+    document.getElementById("char-count").textContent = count;
+    if (count > 280) {
+      this.classList.add("is-invalid");
+    } else {
+      this.classList.remove("is-invalid");
+    }
+  });
+
+  function postTweet(id) {
+    if (confirm("Post this tweet now?")) {
+      fetch(`/api/tweets/${id}/post`, {
+        method: "POST",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            showAlert("success", "Tweet posted successfully");
+            setTimeout(() => window.location.reload(), 1000);
+          } else {
+            showAlert("danger", "Error: " + data.error);
+          }
+        })
+        .catch((error) => showAlert("danger", "Error: " + error.message));
+    }
+  }
+
+  function deleteTweet(id) {
+    if (confirm("Delete this tweet?")) {
+      fetch(`/api/tweets/${id}`, {
+        method: "DELETE",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            showAlert("success", "Tweet deleted successfully");
+            setTimeout(() => window.location.reload(), 1000);
+          } else {
+            showAlert("danger", "Error: " + data.error);
+          }
+        })
+        .catch((error) => showAlert("danger", "Error: " + error.message));
+    }
+  }
+
+  function scheduleNextBatch() {
+    fetch("/api/actions/schedule-batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showAlert("success", data.message);
+          setTimeout(() => window.location.reload(), 2000);
+        } else {
+          showAlert("danger", "Error: " + data.error);
+        }
+      })
+      .catch((error) => showAlert("danger", "Error: " + error.message));
+  }
+</script>

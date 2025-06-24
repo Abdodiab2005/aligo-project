@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      <%= typeof title !== 'undefined' ? title : 'Dashboard' %> - Twitter
+      Automation System
+    </title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="header">
+      <div class="container header-container">
+        <div class="logo">
+          <i class="fab fa-twitter"></i>
+          <span>Twitter Automation</span>
+        </div>
+        <button id="sidebar-toggle" class="btn btn-sm btn-secondary d-md-none">
+          <i class="fas fa-bars"></i>
+        </button>
+        <% if (typeof user !== 'undefined' && user) { %>
+        <div class="dropdown">
+          <button class="btn btn-sm btn-secondary dropdown-toggle">
+            <i class="fas fa-user"></i> <%= user.username %>
+          </button>
+          <div class="dropdown-menu">
+            <a href="/dashboard/settings" class="dropdown-item">
+              <i class="fas fa-cog"></i> Settings
+            </a>
+            <button id="logout-btn" class="dropdown-item">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+          </div>
+        </div>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <i class="fab fa-twitter"></i>
+          <span>TweetBot</span>
+        </div>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-title">Main</div>
+          <a
+            href="/dashboard"
+            class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'dashboard') ? 'active' : '' %>"
+          >
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+          </a>
+          <a
+            href="/dashboard/accounts"
+            class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'accounts') ? 'active' : '' %>"
+          >
+            <i class="fas fa-users"></i> Monitored Accounts
+          </a>
+          <a
+            href="/dashboard/tweets"
+            class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'tweets') ? 'active' : '' %>"
+          >
+            <i class="fas fa-comment"></i> Tweets
+          </a>
+          <a
+            href="/dashboard/schedule"
+            class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'schedule') ? 'active' : '' %>"
+          >
+            <i class="fas fa-calendar-alt"></i> Schedule
+          </a>
+          <a
+            href="/dashboard/logs"
+            class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'logs') ? 'active' : '' %>"
+          >
+            <i class="fas fa-book"></i> Logs
+          </a>
+          <a
+            href="/dashboard/stats"
+            class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'stats') ? 'active' : '' %>"
+          >
+            <i class="fas fa-chart-bar"></i> Statistics
+          </a>
+        </div>
+        <div class="nav-group">
+          <div class="nav-group-title">Settings</div>
+          <a
+            href="/dashboard/settings"
+            class="nav-item <%= (typeof activePage !== 'undefined' && activePage === 'settings') ? 'active' : '' %>"
+          >
+            <i class="fas fa-cog"></i> System Settings
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <div id="alerts-container"></div>
+      <%- body %>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <% if (typeof scripts !== 'undefined' && scripts) { %> <%
+    scripts.forEach(function(script) { %>
+    <script src="<%= script %>"></script>
+    <% }); %> <% } %>
+    <script>
+      // Logout functionality
+      const logoutBtn = document.getElementById("logout-btn");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", function () {
+          fetch("/auth/logout", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                window.location.href = "/login";
+              }
+            })
+            .catch((error) => {
+              console.error("Error logging out:", error);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>

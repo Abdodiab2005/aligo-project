@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error - Twitter Automation System</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+  <div class="container" style="max-width: 600px; margin: 100px auto;">
+    <div class="card">
+      <div class="card-header text-center">
+        <h2 class="card-title">
+          <i class="fas fa-exclamation-triangle text-danger"></i> 
+          Error
+        </h2>
+        <p class="card-subtitle"><%= error.status || 500 %> - <%= message %></p>
+      </div>
+      <div class="card-body">
+        <% if (process.env.NODE_ENV === 'development' && error.stack) { %>
+          <div class="alert alert-danger">
+            <pre><%= error.stack %></pre>
+          </div>
+        <% } %>
+        <div class="text-center mt-4">
+          <a href="/" class="btn btn-primary">
+            <i class="fas fa-home"></i> Back to Home
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

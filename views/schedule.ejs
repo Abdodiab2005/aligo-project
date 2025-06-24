@@ -1,0 +1,145 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">Tweet Schedule</h1>
+    <button class="btn btn-primary" onclick="scheduleNextBatch()">
+      <i class="fas fa-calendar-plus"></i> Schedule Next Batch
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title">Scheduled Tweets</h5>
+      <p class="card-subtitle">Tweets scheduled for automatic posting</p>
+    </div>
+    <div class="card-body p-0">
+      <% if (typeof scheduledTweets !== 'undefined' && scheduledTweets.length >
+      0) { %>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th>Scheduled Time</th>
+              <th>Account</th>
+              <th>Tweet Preview</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% scheduledTweets.forEach(function(tweet) { %>
+            <tr>
+              <td>
+                <% if (tweet.scheduled_for) { %> <%= new
+                Date(tweet.scheduled_for).toLocaleString() %> <% } else { %>
+                <span class="text-muted">Not scheduled</span>
+                <% } %>
+              </td>
+              <td>@<%= tweet.username %></td>
+              <td>
+                <div class="tweet-preview">
+                  <%= (tweet.modified_text || tweet.original_text).substring(0,
+                  100) %> <% if ((tweet.modified_text ||
+                  tweet.original_text).length > 100) { %>... <% } %>
+                </div>
+              </td>
+              <td>
+                <span
+                  class="badge <%= tweet.posted ? 'badge-success' : 'badge-warning' %>"
+                >
+                  <%= tweet.posted ? 'Posted' : 'Scheduled' %>
+                </span>
+              </td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <% if (!tweet.posted) { %>
+                  <button
+                    class="btn btn-outline-primary"
+                    onclick="editSchedule(<%= tweet.id %>)"
+                  >
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button
+                    class="btn btn-outline-success"
+                    onclick="postNow(<%= tweet.id %>)"
+                  >
+                    <i class="fas fa-paper-plane"></i>
+                  </button>
+                  <% } %>
+                  <button
+                    class="btn btn-outline-danger"
+                    onclick="removeTweet(<%= tweet.id %>)"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <% } else { %>
+      <div class="text-center py-5">
+        <i class="fas fa-calendar fa-3x text-muted mb-3"></i>
+        <h5>No scheduled tweets</h5>
+        <p class="text-muted">Schedule tweets to see them here</p>
+      </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<script>
+  function scheduleNextBatch() {
+    fetch("/api/actions/schedule-batch", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showAlert("success", data.message);
+          setTimeout(() => window.location.reload(), 2000);
+        } else {
+          showAlert("danger", "Error: " + data.error);
+        }
+      })
+      .catch((error) => showAlert("danger", "Error: " + error.message));
+  }
+
+  function postNow(id) {
+    if (confirm("Post this tweet immediately?")) {
+      fetch(`/api/tweets/${id}/post`, {
+        method: "POST",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            showAlert("success", "Tweet posted successfully");
+            setTimeout(() => window.location.reload(), 1000);
+          } else {
+            showAlert("danger", "Error: " + data.error);
+          }
+        })
+        .catch((error) => showAlert("danger", "Error: " + error.message));
+    }
+  }
+
+  function removeTweet(id) {
+    if (confirm("Remove this tweet from schedule?")) {
+      fetch(`/api/tweets/${id}`, {
+        method: "DELETE",
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            showAlert("success", "Tweet removed successfully");
+            setTimeout(() => window.location.reload(), 1000);
+          } else {
+            showAlert("danger", "Error: " + data.error);
+          }
+        })
+        .catch((error) => showAlert("danger", "Error: " + error.message));
+    }
+  }
+</script>

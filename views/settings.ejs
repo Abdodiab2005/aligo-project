@@ -1,0 +1,257 @@
+<div class="container">
+  <h1 class="h3 mb-4">System Settings</h1>
+
+  <form id="settings-form">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="card-title">General Settings</h5>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">System Status</label>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox"
+                name="system_enabled" <%= (typeof settings !== 'undefined' &&
+                settings.system_enabled === '1') ? 'checked' : '' %>>
+                <label class="form-check-label">Enable automation system</label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="daily_quota" class="form-label"
+                >Daily Tweet Quota</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                name="daily_quota"
+                value="<%= (typeof settings !== 'undefined' && settings.daily_quota) ? settings.daily_quota : '10' %>"
+                min="1"
+                max="100"
+              />
+              <small class="form-text text-muted"
+                >Maximum tweets to post per day</small
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="time_between_posts" class="form-label"
+                >Time Between Posts (minutes)</label
+              >
+              <input
+                type="number"
+                class="form-control"
+                name="time_between_posts"
+                value="<%= (typeof settings !== 'undefined' && settings.time_between_posts) ? settings.time_between_posts : '90' %>"
+                min="30"
+                max="1440"
+              />
+              <small class="form-text text-muted"
+                >Minimum time between scheduled posts</small
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="donation_url" class="form-label">Donation URL</label>
+              <input
+                type="url"
+                class="form-control"
+                name="donation_url"
+                value="<%= (typeof settings !== 'undefined' && settings.donation_url) ? settings.donation_url : '' %>"
+                placeholder="https://donate.example.org"
+              />
+              <small class="form-text text-muted"
+                >URL to replace donation links in tweets</small
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="card-title">Active Hours</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-6">
+                <div class="form-group">
+                  <label for="active_hours_start" class="form-label"
+                    >Start Time</label
+                  >
+                  <input
+                    type="time"
+                    class="form-control"
+                    name="active_hours_start"
+                    value="<%= (typeof settings !== 'undefined' && settings.active_hours_start) ? settings.active_hours_start : '08:00' %>"
+                  />
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="form-group">
+                  <label for="active_hours_end" class="form-label"
+                    >End Time</label
+                  >
+                  <input
+                    type="time"
+                    class="form-control"
+                    name="active_hours_end"
+                    value="<%= (typeof settings !== 'undefined' && settings.active_hours_end) ? settings.active_hours_end : '22:00' %>"
+                  />
+                </div>
+              </div>
+            </div>
+            <small class="form-text text-muted"
+              >Tweets will only be posted during these hours</small
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="card-title">Twitter API Configuration</h5>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <label for="twitter_api_key" class="form-label">API Key</label>
+              <input
+                type="password"
+                class="form-control"
+                name="twitter_api_key"
+                value="<%= (typeof settings !== 'undefined' && settings.twitter_api_key) ? settings.twitter_api_key : '' %>"
+                placeholder="Enter Twitter API Key"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="twitter_api_secret" class="form-label"
+                >API Secret</label
+              >
+              <input
+                type="password"
+                class="form-control"
+                name="twitter_api_secret"
+                value="<%= (typeof settings !== 'undefined' && settings.twitter_api_secret) ? settings.twitter_api_secret : '' %>"
+                placeholder="Enter Twitter API Secret"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="twitter_access_token" class="form-label"
+                >Access Token</label
+              >
+              <input
+                type="password"
+                class="form-control"
+                name="twitter_access_token"
+                value="<%= (typeof settings !== 'undefined' && settings.twitter_access_token) ? settings.twitter_access_token : '' %>"
+                placeholder="Enter Access Token"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="twitter_access_secret" class="form-label"
+                >Access Token Secret</label
+              >
+              <input
+                type="password"
+                class="form-control"
+                name="twitter_access_secret"
+                value="<%= (typeof settings !== 'undefined' && settings.twitter_access_secret) ? settings.twitter_access_secret : '' %>"
+                placeholder="Enter Access Token Secret"
+              />
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              onclick="testTwitterConnection()"
+            >
+              <i class="fas fa-check"></i> Test Connection
+            </button>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="card-title">Link Processing</h5>
+          </div>
+          <div class="card-body">
+            <div class="form-group">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox"
+                name="replace_all_links" <%= (typeof settings !== 'undefined' &&
+                settings.replace_all_links === '1') ? 'checked' : '' %>>
+                <label class="form-check-label"
+                  >Replace all external links</label
+                >
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox"
+                name="preserve_hashtags" <%= (typeof settings !== 'undefined' &&
+                settings.preserve_hashtags === '1') ? 'checked' : '' %>>
+                <label class="form-check-label">Preserve hashtags</label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox"
+                name="preserve_mentions" <%= (typeof settings !== 'undefined' &&
+                settings.preserve_mentions === '1') ? 'checked' : '' %>>
+                <label class="form-check-label">Preserve mentions</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center">
+      <button type="submit" class="btn btn-primary btn-lg">
+        <i class="fas fa-save"></i> Save Settings
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  function testTwitterConnection() {
+    const apiKey = document.querySelector('[name="twitter_api_key"]').value;
+    const apiSecret = document.querySelector(
+      '[name="twitter_api_secret"]'
+    ).value;
+    const accessToken = document.querySelector(
+      '[name="twitter_access_token"]'
+    ).value;
+    const accessSecret = document.querySelector(
+      '[name="twitter_access_secret"]'
+    ).value;
+
+    if (!apiKey || !apiSecret || !accessToken || !accessSecret) {
+      showAlert("warning", "Please fill in all Twitter API credentials");
+      return;
+    }
+
+    fetch("/api/twitter/test-connection", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ apiKey, apiSecret, accessToken, accessSecret }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          showAlert("success", "Twitter API connection successful!");
+        } else {
+          showAlert("danger", "Connection failed: " + data.error);
+        }
+      })
+      .catch((error) => showAlert("danger", "Error: " + error.message));
+  }
+</script>
