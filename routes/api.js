@@ -32,10 +32,17 @@ const router = express.Router();
 
 // Middleware to check API auth
 function checkApiAuth(req, res, next) {
-  if (req.session && req.session.authenticated) {
-    return next();
+  const token = req.cookies.token;
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
   }
-  return res.status(401).json({ error: "Unauthorized" });
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+    req.user = decoded;
+    next();
+  });
 }
 
 router.use(checkApiAuth);
@@ -316,7 +323,9 @@ router.post("/twitter/test-connection", async (req, res) => {
 router.get("/url-replacements", async (req, res) => {
   try {
     const db = await require("../lib/db.js").getDb();
-    const rows = await db.all("SELECT * FROM url_replacements ORDER BY id DESC");
+    const rows = await db.all(
+      "SELECT * FROM url_replacements ORDER BY id DESC"
+    );
     res.json({ success: true, replacements: rows });
   } catch (error) {
     console.error("Error fetching URL replacements:", error);
@@ -329,7 +338,9 @@ router.post("/url-replacements", async (req, res) => {
   try {
     const { original_url, replacement_url } = req.body;
     if (!original_url || !replacement_url) {
-      return res.status(400).json({ error: "Both original_url and replacement_url are required." });
+      return res
+        .status(400)
+        .json({ error: "Both original_url and replacement_url are required." });
     }
     await setReplacementUrl(original_url, replacement_url);
     res.json({ success: true, message: "Replacement added/updated." });
@@ -345,10 +356,15 @@ router.patch("/url-replacements/:id", async (req, res) => {
     const { id } = req.params;
     const { original_url, replacement_url } = req.body;
     if (!original_url || !replacement_url) {
-      return res.status(400).json({ error: "Both original_url and replacement_url are required." });
+      return res
+        .status(400)
+        .json({ error: "Both original_url and replacement_url are required." });
     }
     const db = await require("../lib/db.js").getDb();
-    await db.run("UPDATE url_replacements SET original_url = ?, replacement_url = ? WHERE id = ?", [original_url, replacement_url, id]);
+    await db.run(
+      "UPDATE url_replacements SET original_url = ?, replacement_url = ? WHERE id = ?",
+      [original_url, replacement_url, id]
+    );
     res.json({ success: true, message: "Replacement updated." });
   } catch (error) {
     console.error("Error updating URL replacement:", error);
