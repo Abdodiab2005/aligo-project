@@ -72,6 +72,7 @@ function initializeDashboardControls() {
       fetch("/api/actions/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
       })
         .then((response) => response.json())
         .then((data) => {
@@ -102,6 +103,7 @@ function initializeDashboardControls() {
       fetch("/api/actions/test-post", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
       })
         .then((response) => response.json())
         .then((data) => {
@@ -136,6 +138,7 @@ function initializeForms() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "same-origin",
       })
         .then((response) => response.json())
         .then((data) => {
@@ -166,6 +169,7 @@ function initializeForms() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        credentials: "same-origin",
       })
         .then((response) => response.json())
         .then((data) => {
@@ -378,6 +382,7 @@ function updateSetting(key, value) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ key, value }),
+    credentials: "same-origin",
   })
     .then((response) => response.json())
     .then((data) => {
@@ -394,6 +399,7 @@ window.fetchTweets = (username) => {
     fetch(`/api/accounts/${username}/fetch`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
     })
       .then((response) => response.json())
       .then((data) => {
@@ -416,6 +422,7 @@ window.deleteAccount = (id) => {
   ) {
     fetch(`/api/accounts/${id}`, {
       method: "DELETE",
+      credentials: "same-origin",
     })
       .then((response) => response.json())
       .then((data) => {
@@ -434,6 +441,7 @@ window.postTweet = (id) => {
   if (confirm("Post this tweet now?")) {
     fetch(`/api/tweets/${id}/post`, {
       method: "POST",
+      credentials: "same-origin",
     })
       .then((response) => response.json())
       .then((data) => {
@@ -452,6 +460,7 @@ window.deleteTweet = (id) => {
   if (confirm("Delete this tweet?")) {
     fetch(`/api/tweets/${id}`, {
       method: "DELETE",
+      credentials: "same-origin",
     })
       .then((response) => response.json())
       .then((data) => {
@@ -474,6 +483,7 @@ window.clearLogs = () => {
   ) {
     fetch("/api/logs/clear", {
       method: "POST",
+      credentials: "same-origin",
     })
       .then((response) => response.json())
       .then((data) => {
@@ -507,6 +517,7 @@ window.testTwitterConnection = () => {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ apiKey, apiSecret, accessToken, accessSecret }),
+    credentials: "same-origin",
   })
     .then((response) => response.json())
     .then((data) => {
