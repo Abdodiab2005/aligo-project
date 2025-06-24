@@ -27,6 +27,7 @@ const {
   processScheduledTweets,
   fetchNewTweets,
 } = require("../lib/scheduler.js");
+const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
